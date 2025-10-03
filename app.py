@@ -5,14 +5,41 @@ from gtts import gTTS
 import os
 from groq import Groq
 from deep_translator import GoogleTranslator
+import sys
+
+# Load environment variables from .env file if it exists (for local development)
+try:
+    if os.path.exists('.env'):
+        from dotenv import load_dotenv
+        load_dotenv()
+        print("Loaded environment variables from .env file")
+except ImportError:
+    print("dotenv package not installed. Environment variables will need to be set manually.")
+except Exception as e:
+    print(f"Warning: Could not load .env file: {e}")
 
 # Initialize Flask
 app = Flask(__name__)
 
 # Initialize Groq client using environment variable
 # IMPORTANT: Set the GROQ_API_KEY environment variable in your deployment platform
-groq_api_key = os.environ.get('GROQ_API_KEY', "YOUR_GROQ_API_KEY_HERE")
-client = Groq(api_key=groq_api_key)
+# For local testing, set the environment variable: 
+# - Windows PowerShell: $env:GROQ_API_KEY = "your_api_key"
+# - Mac/Linux: export GROQ_API_KEY="your_api_key"
+groq_api_key = os.environ.get('GROQ_API_KEY')
+chatbot_available = False
+
+# Check if a valid API key is available
+if groq_api_key and groq_api_key != "YOUR_GROQ_API_KEY_HERE":
+    try:
+        client = Groq(api_key=groq_api_key)
+        chatbot_available = True
+    except Exception as e:
+        print(f"Error initializing Groq client: {e}")
+        client = None
+else:
+    print("Warning: No Groq API key provided. Chatbot functionality will be disabled.")
+    client = None
 
 # ------------------------------
 # PROMPT TEMPLATE FOR CHATBOT
@@ -97,23 +124,35 @@ def chatbot_api():
         if not user_message:
             return jsonify({"error": "No message provided"}), 400
 
+        # Check if chatbot is available (API key is valid)
+        if not chatbot_available or client is None:
+            return jsonify({
+                "response": "I'm sorry, the chatbot service is currently unavailable. Please try again later or contact the administrator to set up the API key."
+            })
+
         prompt = PROMPT_TEMPLATE.format(user_input=user_message)
 
-        response = client.chat.completions.create(
-            model="deepseek-r1-distill-llama-70b",
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": user_message}
-            ]
-        )
+        try:
+            response = client.chat.completions.create(
+                model="deepseek-r1-distill-llama-70b",
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": user_message}
+                ]
+            )
 
-        chatbot_response = response.choices[0].message.content
-        
-        # Remove any <think>...</think> sections from the response
-        import re
-        clean_response = re.sub(r'<think>.*?</think>', '', chatbot_response, flags=re.DOTALL).strip()
-        
-        return jsonify({"response": clean_response})
+            chatbot_response = response.choices[0].message.content
+            
+            # Remove any <think>...</think> sections from the response
+            import re
+            clean_response = re.sub(r'<think>.*?</think>', '', chatbot_response, flags=re.DOTALL).strip()
+            
+            return jsonify({"response": clean_response})
+        except Exception as e:
+            print(f"Error calling Groq API: {e}")
+            return jsonify({
+                "response": "I'm sorry, I encountered an error while processing your request. Please try again later."
+            })
 
     except Exception as e:
         import traceback
@@ -279,7 +318,7 @@ def predict():
 # Route for chatbot page
 @app.route('/chatbot')
 def chatbot_page():
-    return render_template('chatbot.html', page_class='chatbot-page')
+    return render_template('chatbot.html', page_class='chatbot-page', chatbot_available=chatbot_available)
 
 
 # Run Flask
