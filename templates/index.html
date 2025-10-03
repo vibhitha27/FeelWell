@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+<style>
+    body {
+        background-image: url("{{ url_for('static', filename='images/index-bg.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-container">
+    <h1>FeelWell</h1>
+    <p>Your guide to mental wellness.</p>
+    <div class="button-container">
+        <a href="{{ url_for('language_selection') }}" class="button">Get Started</a>
+    </div>
+</div>
+{% endblock %}
+<body class="index-page"></body>

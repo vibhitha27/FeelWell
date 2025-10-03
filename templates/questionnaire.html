@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    /* Additional CSS for enhanced questionnaire */
+    .progress-container {
+        width: 100%;
+        background-color: #f1f1f1;
+        border-radius: 10px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+    
+    #progress-bar {
+        width: 0;
+        height: 20px;
+        background: linear-gradient(to right, #4CAF50, #45a049);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+    
+    #progress-text {
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .question-item {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+    }
+    
+    .question-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .question-item.selected {
+        border-left: 5px solid #4CAF50;
+    }
+    
+    .question-item label {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 15px;
+        padding-left: 30px;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .question-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+    
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 20px;
+        width: 20px;
+        background-color: #eee;
+        border-radius: 4px;
+    }
+    
+    .question-item:hover input ~ .checkmark {
+        background-color: #ccc;
+    }
+    
+    .question-item input:checked ~ .checkmark {
+        background-color: #4CAF50;
+    }
+    
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+    
+    .question-item input:checked ~ .checkmark:after {
+        display: block;
+    }
+    
+    .question-item .checkmark:after {
+        left: 7px;
+        top: 3px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+    
+    .question-item audio {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 30px;
+    }
+    
+    .nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+    }
+    
+    .nav-button {
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .nav-button:hover:not(:disabled) {
+        background-color: #5a6268;
+    }
+    
+    .nav-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .button-container {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .audio-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="content-container">
+        <h1>Mental Health Assessment</h1>
+        
+        <div id="progress-text">Question 1 of {{ questions|length }}</div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        
+        <form action="{{ url_for('predict') }}" method="post">
+            <input type="hidden" name="lang" value="{{ lang }}">
+            <p>Please answer the following questions honestly to help us understand your mental wellness.</p>
+            
+            {% for q_en, q_translated in questions.items() %}
+            <div class="question-item">
+                <label for="q{{ loop.index }}">
+                    <input type="checkbox" id="q{{ loop.index }}" name="symptoms" value="{{ q_en }}">
+                    <span class="checkmark"></span>
+                    {{ q_translated }}
+                </label>
+                <div class="audio-control">
+                    <audio controls>
+                        <source src="{{ url_for('static', filename=audio_files[q_en]) }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="button-container">
+                <button type="submit" class="button">Submit Assessment</button>
+            </div>
+        </form>
+        
+        <div class="button-container">
+            <a href="{{ url_for('chatbot_page') }}" class="button">Talk to Dr. Chat</a>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/questionnaire.js') }}"></script>
+{% endblock %}

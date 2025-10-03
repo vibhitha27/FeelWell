@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    body {
+        background-image: url("{{ url_for('static', filename='images/about-bg.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <h1>About FeelWell</h1>
+    <p>{{ about_text }}</p>
+    <audio controls class="audio-player">
+        <source src="{{ url_for('static', filename=audio_file) }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <div class="button-container">
+        <a href="{{ url_for('questionnaire', lang=lang) }}" class="button">Proceed to Questionnaire</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    /* You can add specific styles for this page here */
+    .language-selection-container {
+        text-align: center;
+    }
+    .button-container {
+        text-align: center;
+    }
+    .button {
+        display: inline-block;
+        padding: 12px 25px;
+        margin: 10px;
+        background-color: #5cb85c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<body class="language-page">
+    <div class="content-container">
+        <h1>Select Your Language</h1>
+        <form method="post" action="{{ url_for('language_selection') }}">
+            <div class="language-container">
+                <button type="submit" name="language" value="en" class="language-button">English</button>
+                <button type="submit" name="language" value="ta" class="language-button">தமிழ்</button>
+            </div>
+        </form>
+    </div>
+</body>
+{% endblock %}

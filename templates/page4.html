@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fourth Page</title>
+    <style>
+        .chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            border: 1px solid #ccc;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: none;
+        }
+        .chat-input button {
+            padding: 8px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Page 4</h1>
+
+    <!-- Chatbot -->
+    <div class="chatbox">
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value;
+            if (!message) return;
+
+            const messagesDiv = document.getElementById("chat-messages");
+            messagesDiv.innerHTML += `<div><b>You:</b> ${message}</div>`;
+
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: message})
+            });
+
+            const data = await response.json();
+            const botReply = data.reply;
+
+            messagesDiv.innerHTML += `<div><b>Bot:</b> ${botReply}</div>`;
+            input.value = "";
+
+            // Optional: Call TTS
+            const audio = new Audio(`/speak/${encodeURIComponent(botReply)}`);
+            audio.play();
+        }
+    </script>
+</body>
+</html>
