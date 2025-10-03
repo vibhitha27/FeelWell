@@ -9,10 +9,10 @@ from deep_translator import GoogleTranslator
 # Initialize Flask
 app = Flask(__name__)
 
-# Initialize Groq client using environment variable or placeholder
-# IMPORTANT: Replace this with your actual API key when deploying 
-# For production, use environment variables: os.environ.get('GROQ_API_KEY')
-client = Groq(api_key="YOUR_GROQ_API_KEY_HERE")
+# Initialize Groq client using environment variable
+# IMPORTANT: Set the GROQ_API_KEY environment variable in your deployment platform
+groq_api_key = os.environ.get('GROQ_API_KEY', "YOUR_GROQ_API_KEY_HERE")
+client = Groq(api_key=groq_api_key)
 
 # ------------------------------
 # PROMPT TEMPLATE FOR CHATBOT
